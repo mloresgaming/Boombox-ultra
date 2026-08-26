@@ -1,0 +1,1407 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0e16">
+<meta name="description" content="מדריך אינטראקטיבי לבניית בומבוקס נייד מקצועי — תצוגת תלת-ממד, רשימת חיתוך לנגרות, תרשימי חיווט ומעקב שלבי בנייה.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Boombox Studio">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%94%8A%3C/text%3E%3C/svg%3E">
+<title>מדריך בנייה — בומבוקס נייד מקצועי</title>
+<style>
+  :root{
+    --bg:#0a0e16; --bg2:#0e1420; --panel:#141b2a; --panel2:#1a2336; --line:#26314a;
+    --ink:#eef2f8; --ink-dim:#8c96ac; --amber:#ffb020; --cyan:#4fd1c5; --red:#ff5a70;
+    --sub:#161616; --mid:#3a3f4a; --tw:#c9cdd6; --amp:#31a86a; --batt:#2196c9;
+    --radius:14px; --box-color:#c99a63;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;-webkit-text-size-adjust:100%;}
+  body{
+    background:radial-gradient(1200px 600px at 50% -10%, #131c2f 0%, var(--bg) 60%);
+    color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+    display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden;
+  }
+  .mono{font-family:ui-monospace,"SF Mono","Roboto Mono","Cascadia Code",Consolas,monospace;}
+  button{font-family:inherit;transition:transform .08s;}
+  button:active{transform:scale(.96);}
+  button:focus-visible, [tabindex]:focus-visible, input:focus-visible, a:focus-visible{
+    outline:2px solid var(--amber); outline-offset:2px; border-radius:6px;
+  }
+
+  header{flex-shrink:0;padding:max(8px, env(safe-area-inset-top)) 12px 6px;background:linear-gradient(180deg,#0d1220,#0a0e16);border-bottom:1px solid var(--line);}
+  .h-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .h-title{font-size:.95rem;font-weight:800;letter-spacing:.03em;}
+  .h-title span{color:var(--amber);}
+  .spec-plate{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;}
+  .spec-chip{background:var(--panel);border:1px solid var(--line);border-radius:9px;padding:4px 4px;text-align:center;}
+  .spec-chip .v{font-size:.72rem;font-weight:800;color:var(--cyan);}
+  .spec-chip .l{font-size:.53rem;color:var(--ink-dim);margin-top:1px;}
+
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-bottom:1px solid var(--line);flex-shrink:0;}
+  .tab{background:none;border:none;color:var(--ink-dim);font-size:.64rem;font-weight:700;padding:7px 2px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border-bottom:3px solid transparent;}
+  .tab .ic{font-size:.92rem;}
+  .tab.active{color:var(--amber);border-bottom-color:var(--amber);background:rgba(255,176,32,.06);}
+
+  .sheet{flex-shrink:0;background:var(--bg2);border-top:1px solid var(--line);border-bottom:1px solid var(--line);}
+  .sheet-handle{width:100%;background:var(--panel);border:none;color:var(--amber);font-size:.68rem;font-weight:800;padding:8px;display:flex;align-items:center;justify-content:center;gap:6px;}
+  .sheet-body{overflow-y:auto;padding:10px;max-height:40vh;}
+  .sheet-body.hidden{display:none;}
+  .toggle-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+  .toggle-grid .btn:nth-child(3n+1):last-child{grid-column:1 / -1;flex-direction:row;}
+  .btn{background:var(--panel);border:1px solid var(--line);color:var(--ink);padding:8px 3px;border-radius:10px;font-size:.6rem;font-weight:700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:40px;}
+  .btn .bic{font-size:.88rem;}
+  .btn.on{border-color:var(--amber);color:var(--amber);background:rgba(255,176,32,.08);}
+  .btn-row{display:flex;gap:8px;}
+  .btn-row .btn{flex:1;flex-direction:row;}
+  .pulse{animation:pulseFlash .45s ease;}
+  @keyframes pulseFlash{0%{box-shadow:0 0 0 0 rgba(255,176,32,.65);}100%{box-shadow:0 0 0 13px rgba(255,176,32,0);}}
+
+  .swatch-row{display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap;}
+  .swatch{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;}
+  .swatch.sel{border-color:var(--amber);box-shadow:0 0 0 2px rgba(255,176,32,.3);}
+  .swatch-custom{width:32px;height:32px;border-radius:50%;border:2px solid var(--line);padding:0;overflow:hidden;background:conic-gradient(red,yellow,lime,cyan,blue,magenta,red);}
+  .swatch-custom.sel{border-color:var(--amber);box-shadow:0 0 0 2px rgba(255,176,32,.3);}
+  .swatch-custom input{opacity:0;width:100%;height:100%;cursor:pointer;}
+
+  .mini-legend{font-size:.63rem;color:var(--ink-dim);margin-top:4px;}
+  .mini-legend .row{display:flex;align-items:center;gap:6px;margin-bottom:4px;}
+  .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0;}
+
+  .step-row{flex-shrink:0;display:flex;gap:6px;overflow-x:auto;padding:6px 10px;background:var(--bg2);border-bottom:1px solid var(--line);-webkit-overflow-scrolling:touch;}
+  .step-row::-webkit-scrollbar{display:none;}
+  .step-chip{flex-shrink:0;background:var(--panel);border:1px solid var(--line);color:var(--ink-dim);font-size:.64rem;font-weight:700;padding:5px 11px;border-radius:20px;white-space:nowrap;}
+  .step-chip.active{background:rgba(255,176,32,.15);border-color:var(--amber);color:var(--amber);}
+
+  #workspace{flex:1;min-height:0;position:relative;}
+  .panel{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
+  .panel.active{display:flex;}
+  .scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:11px 11px max(24px, env(safe-area-inset-bottom));}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:13px;margin-bottom:11px;transition:opacity .2s, filter .2s;}
+  .card.accent{border-color:rgba(255,176,32,.35);}
+  .card.warn{border-color:rgba(255,90,112,.4);}
+  .card.faded{opacity:.32;filter:grayscale(.4);}
+  h2{font-size:.88rem;color:var(--amber);letter-spacing:.02em;margin-bottom:7px;}
+  h3{font-size:.8rem;color:var(--cyan);margin:11px 0 6px;}
+  h3:first-child{margin-top:0;}
+  p{font-size:.78rem;line-height:1.58;color:#cdd5e3;margin-bottom:6px;}
+  ul{padding-inline-start:19px;margin-bottom:5px;}
+  li{font-size:.78rem;line-height:1.58;color:#cdd5e3;margin-bottom:5px;}
+  strong{color:var(--ink);}
+  .tag{display:inline-block;font-size:.58rem;font-weight:800;letter-spacing:.03em;padding:2px 7px;border-radius:20px;margin-inline-end:5px;}
+  .tag.crit{background:rgba(255,90,112,.15);color:var(--red);border:1px solid rgba(255,90,112,.4);}
+  .tag.note{background:rgba(79,209,197,.15);color:var(--cyan);border:1px solid rgba(79,209,197,.4);}
+
+  .tbl-wrap{overflow-x:auto;margin:6px 0 4px;}
+  table{width:100%;border-collapse:collapse;font-size:.73rem;min-width:280px;}
+  th,td{border:1px solid var(--line);padding:6px 4px;text-align:center;}
+  th{background:var(--panel2);color:var(--cyan);font-size:.66rem;}
+  td{color:#dbe1ec;}
+  td:first-child,th:first-child{text-align:right;}
+
+  .print-btn{background:var(--panel2);border:1px solid var(--cyan);color:var(--cyan);font-size:.66rem;font-weight:700;padding:6px 11px;border-radius:9px;display:flex;align-items:center;gap:5px;flex-shrink:0;}
+  .scroll-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:9px;gap:8px;flex-wrap:wrap;}
+  .scroll-head .htxt{font-size:.66rem;color:var(--ink-dim);}
+  .scroll-head .cluster{display:flex;gap:6px;flex-wrap:wrap;}
+  svg text{fill:var(--ink);}
+  .svg-card{overflow-x:auto;}
+  .svg-card svg{display:block;margin:0 auto;max-width:100%;height:auto;}
+
+  .stl-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin-top:8px;}
+  .stl-grid .btn{padding:10px 4px;font-size:.63rem;}
+  .stl-grid .btn:last-child:nth-child(odd){grid-column:1 / -1;}
+
+  /* ===== 3D scene (reusable) ===== */
+  .scene{display:flex;flex-direction:column;position:relative;flex-shrink:0;}
+  .panel[data-panel="model"] .scene{flex:1;min-height:0;}
+  .scene-collapse-btn{width:100%;background:var(--panel2);border:none;border-bottom:1px solid var(--line);color:var(--amber);font-size:.68rem;font-weight:800;padding:9px;display:flex;align-items:center;justify-content:center;gap:6px;flex-shrink:0;}
+  .scene-content{display:flex;flex-direction:column;}
+  .scene-content.collapsed{display:none;}
+  .panel[data-panel="model"] .scene-content{flex:1;min-height:0;}
+
+  .stage3d{position:relative;overflow:hidden;perspective:1100px;touch-action:none;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 40%, #16203a 0%, #0a0e16 75%);}
+  .panel[data-panel="model"] .stage3d{flex:1;min-height:0;}
+  .scene.compact .stage3d{height:30vh;flex:none;}
+  .stage3d::before{content:'';position:absolute;inset:-20%;background:radial-gradient(circle at 50% 40%, rgba(79,209,197,.10), transparent 60%);animation:ambientGlow 9s ease-in-out infinite;pointer-events:none;}
+  @keyframes ambientGlow{0%,100%{opacity:.55;transform:scale(1);}50%{opacity:1;transform:scale(1.08);}}
+  .stage3d.bg-grid{background-image:repeating-linear-gradient(0deg, rgba(79,209,197,.09) 0 1px, transparent 1px 24px),repeating-linear-gradient(90deg, rgba(79,209,197,.09) 0 1px, transparent 1px 24px);}
+  .stage3d.bg-plain{background:#0b0e14;}
+  .model3d{position:relative;transform-style:preserve-3d;will-change:transform;}
+  .face{position:absolute;transform-style:preserve-3d;border:1px solid rgba(255,255,255,.25);transition:background-color .15s ease, opacity .2s ease;}
+  .face-baffle{background:var(--box-color);background-image:linear-gradient(160deg, rgba(255,255,255,.18), rgba(0,0,0,.12));}
+  .face-solid{background:var(--box-color);filter:brightness(.78);background-image:linear-gradient(160deg, rgba(255,255,255,.10), rgba(0,0,0,.22));}
+  .model3d.wire .face{background:transparent!important;filter:none!important;border:1px solid var(--cyan);}
+  .model3d.wire .part{background:transparent!important;border:1px solid var(--cyan)!important;box-shadow:none!important;}
+
+  .part{position:absolute;border-radius:50%;transform-style:preserve-3d;box-shadow:0 0 0 2px rgba(0,0,0,.35) inset;transition:opacity .2s, filter .2s, box-shadow .2s;}
+  .part.driver-sub{background:radial-gradient(circle at 35% 30%,#2a2a2a,var(--sub) 70%);}
+  .part.driver-mid{background:radial-gradient(circle at 35% 30%,#565c68,var(--mid) 70%);}
+  .part.driver-tw{background:radial-gradient(circle at 35% 30%,#fff,var(--tw) 70%);}
+  .part.rectlbl{border-radius:5px;}
+  .part.amp{background:var(--amp);}
+  .part.batt{background:var(--batt);border-radius:5px;}
+  .part.wall{background:rgba(79,209,197,.10);border:1px dashed rgba(79,209,197,.6);border-radius:2px;}
+  .part.step-highlight, .face.step-highlight{box-shadow:0 0 0 3px var(--amber), 0 0 14px 3px rgba(255,176,32,.7);z-index:3;}
+  .part.step-dim{opacity:.22;filter:grayscale(.5);}
+  .face.step-dim{opacity:.35;}
+
+  .part-label{position:absolute;left:50%;top:100%;background:rgba(10,14,22,.9);border:1px solid var(--cyan);color:var(--cyan);font-size:.5rem;font-weight:700;padding:2px 5px;border-radius:5px;white-space:nowrap;pointer-events:none;display:none;transform-style:preserve-3d;}
+  .face-label{position:absolute;left:5px;top:5px;background:rgba(10,14,22,.92);border:1px solid var(--amber);color:var(--ink);font-size:.48rem;font-weight:700;padding:2px 5px;border-radius:5px;white-space:nowrap;pointer-events:none;display:none;transform-style:preserve-3d;}
+  .model3d.show-part-labels .part-label{display:block;}
+  .model3d.show-face-labels .face-label{display:block;}
+
+  .stage-tag{position:absolute;top:6px;right:8px;z-index:5;font-size:.54rem;color:var(--ink-dim);background:rgba(10,14,22,.7);padding:3px 7px;border-radius:8px;border:1px solid var(--line);}
+  .drag-hint{position:absolute;bottom:6px;left:50%;transform:translateX(-50%);z-index:5;font-size:.54rem;color:var(--ink-dim);background:rgba(10,14,22,.7);padding:3px 9px;border-radius:20px;border:1px solid var(--line);pointer-events:none;}
+
+  .ctl-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;}
+  .ctl-row label{font-size:.71rem;color:var(--ink-dim);white-space:nowrap;}
+  .ctl-row .val{color:var(--cyan);font-weight:700;}
+  input[type=range]{flex:1;accent-color:var(--amber);height:6px;}
+
+  .progress-wrap{padding:9px 11px 0;flex-shrink:0;}
+  .progress-bar{height:8px;border-radius:6px;background:var(--panel);overflow:hidden;border:1px solid var(--line);}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--amber),var(--cyan));width:0%;transition:width .3s;}
+  .progress-txt{font-size:.64rem;color:var(--ink-dim);margin-top:5px;text-align:center;}
+  .step-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:10px;display:flex;gap:10px;}
+  .step-card.done{border-color:rgba(79,209,197,.5);background:rgba(79,209,197,.05);}
+  .step-num{flex-shrink:0;width:27px;height:27px;border-radius:50%;background:var(--panel2);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.8rem;color:var(--amber);border:1px solid var(--line);}
+  .step-card.done .step-num{background:var(--cyan);color:#04140c;border-color:var(--cyan);}
+  .step-body{flex:1;min-width:0;}
+  .step-title{font-size:.82rem;font-weight:800;margin-bottom:4px;display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap;}
+  .step-time{font-size:.58rem;color:var(--ink-dim);font-weight:600;white-space:nowrap;}
+  .step-foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px;flex-wrap:wrap;}
+  .step-check{display:flex;align-items:center;gap:7px;font-size:.68rem;color:var(--ink-dim);}
+  .step-check input{width:16px;height:16px;accent-color:var(--cyan);}
+  .step-view-btn{background:var(--panel2);border:1px solid var(--line);color:var(--cyan);font-size:.58rem;font-weight:700;padding:6px 9px;border-radius:8px;}
+
+  /* lightweight toast for confirmations (STL export, share/copy, reset) */
+  .toast{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom));transform:translate(-50%,140%);background:var(--panel2);border:1px solid var(--amber);color:var(--ink);font-size:.72rem;font-weight:700;padding:9px 16px;border-radius:20px;box-shadow:0 6px 20px rgba(0,0,0,.45);z-index:80;opacity:0;transition:transform .25s ease, opacity .25s ease;pointer-events:none;max-width:88vw;text-align:center;}
+  .toast.show{transform:translate(-50%,0);opacity:1;}
+
+  ::-webkit-scrollbar{width:6px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:6px;}
+
+  @media (prefers-reduced-motion: reduce){
+    .pulse{animation:none!important;}
+    .stage3d::before{animation:none!important;opacity:.7;}
+    html{scroll-behavior:auto!important;}
+  }
+
+  @media print{
+    body{background:#fff;color:#000;height:auto;overflow:visible;display:block;}
+    header,.tabbar,.step-row,.sheet,.scene,.scene-collapse-btn,.print-btn,.step-view-btn,.progress-wrap,.toast{display:none!important;}
+    #workspace{position:static;}
+    .panel{position:static!important;display:none!important;}
+    .panel.active{display:block!important;}
+    .scroll{overflow:visible!important;height:auto!important;padding:0;}
+    .card{background:#fff;border:1px solid #999;color:#000;break-inside:avoid;}
+    .card.faded{opacity:1;filter:none;}
+    h2,h3{color:#000;}
+    p,li,td,th,label,span{color:#000!important;}
+    table,th,td{border-color:#999;}
+    th{background:#eee;}
+    svg text{fill:#000;}
+    .tag.crit,.tag.note{border-color:#000;color:#000;background:#eee;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="h-top"><div class="h-title">🔊 <span>BOOMBOX</span> STUDIO</div></div>
+  <div class="spec-plate">
+    <div class="spec-chip"><div class="v mono">52×30×25 ס״מ</div><div class="l">מידות חוץ</div></div>
+    <div class="spec-chip"><div class="v mono">2.1 ערוצים</div><div class="l">תצורת קול</div></div>
+    <div class="spec-chip"><div class="v mono">8״+2×3.5״+2×1.5״</div><div class="l">דרייברים</div></div>
+    <div class="spec-chip"><div class="v mono">סוללה חיצונית</div><div class="l">Makita 18V</div></div>
+  </div>
+</header>
+
+<div class="tabbar" role="tablist" aria-label="ניווט בין לשוניות המדריך">
+  <button class="tab active" id="tab-model" role="tab" aria-selected="true" aria-controls="panel-model" data-tab="model"><span class="ic">📦</span>תלת-ממד</button>
+  <button class="tab" id="tab-wood" role="tab" aria-selected="false" aria-controls="panel-wood" data-tab="wood"><span class="ic">📐</span>נגרות</button>
+  <button class="tab" id="tab-wire" role="tab" aria-selected="false" aria-controls="panel-wire" data-tab="wire"><span class="ic">⚡</span>חיווט</button>
+  <button class="tab" id="tab-steps" role="tab" aria-selected="false" aria-controls="panel-steps" data-tab="steps"><span class="ic">✅</span>שלבים</button>
+</div>
+
+<div class="sheet">
+  <button class="sheet-handle" data-sheet-toggle aria-expanded="false">⚙️ הגדרות תצוגה — צבע, תוויות, אפקטים</button>
+  <div class="sheet-body hidden" data-sheet-body>
+    <div class="toggle-grid">
+      <button class="btn" id="tgPartLabels" aria-pressed="false"><span class="bic">🏷️</span>תוויות דרייברים</button>
+      <button class="btn" id="tgFaceLabels" aria-pressed="false"><span class="bic">📏</span>תוויות לוחות עץ</button>
+      <button class="btn" id="tgGrid" aria-pressed="true"><span class="bic">▦</span>רשת רקע</button>
+      <button class="btn" id="tgBg"><span class="bic">🎨</span>החלף רקע</button>
+      <button class="btn" id="tgWire" aria-pressed="false"><span class="bic">🔲</span>מצב שרטוט</button>
+      <button class="btn" id="tgSound" aria-pressed="false"><span class="bic">🔈</span>אפקטי קול</button>
+      <button class="btn" id="tgLegend" aria-pressed="false"><span class="bic">🗂️</span>מקרא צבעים</button>
+    </div>
+    <div class="ctl-row"><label>צבע גוף התיבה</label></div>
+    <div class="swatch-row" role="group" aria-label="בחירת צבע גוף התיבה">
+      <button class="swatch sel" data-color="#c99a63" style="background:#c99a63;" title="עץ בירץ׳" aria-label="עץ בירץ׳"></button>
+      <button class="swatch" data-color="#2b2f36" style="background:#2b2f36;" title="שחור מט" aria-label="שחור מט"></button>
+      <button class="swatch" data-color="#e8ecf2" style="background:#e8ecf2;" title="לבן" aria-label="לבן"></button>
+      <button class="swatch" data-color="#5b6472" style="background:#5b6472;" title="אפור בטון" aria-label="אפור בטון"></button>
+      <button class="swatch" data-color="#8b2e2e" style="background:#8b2e2e;" title="אדום יין" aria-label="אדום יין"></button>
+      <label class="swatch-custom" title="צבע מותאם אישית"><input type="color" id="customColor" value="#c99a63" aria-label="צבע מותאם אישית"></label>
+    </div>
+    <div class="mini-legend" id="legendBox" style="display:none;">
+      <div class="row"><span class="dot" style="background:var(--sub);"></span>סאב-וופר 8״ (Ø182)</div>
+      <div class="row"><span class="dot" style="background:var(--mid);"></span>מידריינג׳ 3.5״ (Ø78)</div>
+      <div class="row"><span class="dot" style="background:var(--tw);"></span>טוויטר 1.5״ (Ø45)</div>
+      <div class="row"><span class="dot" style="background:var(--amp);"></span>מגבר ZK-HT21</div>
+      <div class="row"><span class="dot" style="background:var(--batt);"></span>סוללת Makita 18V (חיצונית)</div>
+    </div>
+  </div>
+</div>
+
+<div id="workspace">
+
+  <!-- ============ TAB 1: 3D MODEL (overview) ============ -->
+  <div class="panel active" id="panel-model" role="tabpanel" aria-labelledby="tab-model" tabindex="-1" data-panel="model">
+    <div class="step-row" data-steprow="model"></div>
+    <div class="scene" data-scene="model">
+      <div class="scene-content" data-scene-content>
+        <div class="stage3d bg-grid" data-stage>
+          <div class="stage-tag">גרור לסיבוב</div>
+          <div class="drag-hint" data-draghint>👆 גרור על המודל כדי לסובב</div>
+        </div>
+        <div class="sheet">
+          <button class="sheet-handle" data-sheet-toggle aria-expanded="false">▼ בקרות תצוגה</button>
+          <div class="sheet-body hidden" data-sheet-body></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB 2: WOODWORKING ============ -->
+  <div class="panel" id="panel-wood" role="tabpanel" aria-labelledby="tab-wood" tabindex="-1" data-panel="wood">
+    <div class="step-row" data-steprow="wood"></div>
+    <div class="scene compact" data-scene="wood">
+      <button class="scene-collapse-btn" data-scene-collapse aria-expanded="false">
+        <span data-label>📦 תצוגת הרכבה תלת-ממדית</span>
+        <span data-state>— הצג ▼</span>
+      </button>
+      <div class="scene-content collapsed" data-scene-content>
+        <div class="stage3d bg-grid" data-stage>
+          <div class="stage-tag">תצוגת הרכבה — פרק פאנלים</div>
+          <div class="drag-hint" data-draghint>👆 גרור לסיבוב</div>
+        </div>
+        <div class="sheet">
+          <button class="sheet-handle" data-sheet-toggle aria-expanded="false">▼ בקרות תצוגה תלת-ממדית</button>
+          <div class="sheet-body hidden" data-sheet-body></div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div class="scroll-head">
+        <span class="htxt">רשימת חיתוך, שרטוטים ותכנון עבודת עץ</span>
+        <div class="cluster">
+          <button class="print-btn" id="shareCutList">📤 שיתוף</button>
+          <button class="print-btn" id="printWood">🖨️ הדפסה</button>
+        </div>
+      </div>
+
+      <div class="card accent" data-steps="1,4,5">
+        <h2>🧱 מבנה התאים הפנימי (חשוב!)</h2>
+        <p>התיבה מחולקת ל-<strong>4 תאים אטומים נפרדים</strong> כדי למנוע אינטראקציית אוויר בין הדרייברים ורעש/רעידות מהאלקטרוניקה:</p>
+        <ul>
+          <li><strong>תא סאב-וופר</strong> — מרכזי, הגדול ביותר.</li>
+          <li><strong>שני תאי מיד-טוויטר</strong> — אחד בכל צד, כל אחד סגור בנפרד.</li>
+          <li><strong>תא אלקטרוניקה אחורי</strong> — מפריד את המגבר מהאזור האקוסטי.</li>
+        </ul>
+        <p><span class="tag note">שינוי</span>הסוללה הוזזה להתקנה <strong>חיצונית על גב התיבה</strong> (כמו על מקדחה) — כך לא צריך לפנות עבורה נפח פנימי, וקל להחליף אותה. הפעל "פירוק פאנלים" בהדמיה למעלה כדי לראות את כל המחיצות בנפרד.</p>
+      </div>
+
+      <div class="card accent" data-steps="1">
+        <h2>🧰 כלים וחומרים נדרשים</h2>
+        <ul>
+          <li>לוח סנדוויץ׳ בירץ׳ (Birch Plywood) עובי 15 מ״מ — לוח שלם אחד בגודל 122×244 ס״מ מספיק בנוחות</li>
+          <li>מסור שולחן / מסור מסילה — לחיתוכים ישרים ומדויקים</li>
+          <li>מקדחת + מקדח עץ 3 מ״מ, מקדח שקען (Countersink)</li>
+          <li>מסור עגול / Hole Saw בקטרים: 182 מ״מ, 78 מ״מ, 45 מ״מ</li>
+          <li>דבק נגרים (Titebond / PVA), ברגי סיבית 4×40 מ״מ</li>
+          <li>אקדח סיליקון לאיטום היקפי, צמר פוליאסטר לריפוד אקוסטי</li>
+          <li>מהדקי נגרות (Clamps), נייר לטש 120→220→400</li>
+          <li>סד/מתקן החלקה (Slide rail) להתקנת הסוללה על הגב, שמן דנמרקי או Bedliner לגימור</li>
+        </ul>
+      </div>
+
+      <div class="card" data-steps="2">
+        <h2>📋 רשימת חיתוך פלטות (בירץ׳ 15 מ״מ)</h2>
+        <div class="tbl-wrap">
+          <table id="cutListTable">
+            <tr><th>פלטה</th><th>מידות (ס״מ)</th><th>כמות</th></tr>
+            <tr><td>חזית (באפל) + גב</td><td>52.0 × 30.0</td><td>2</td></tr>
+            <tr><td>גג + רצפה</td><td>52.0 × 25.0</td><td>2</td></tr>
+            <tr><td>דופן שמאל + ימין</td><td>27.0 × 25.0</td><td>2</td></tr>
+            <tr><td>מחיצה אנכית (סאב↔מיד/טוויטר)</td><td>27.0 × 14.0</td><td>2</td></tr>
+            <tr><td>מחיצה אחורית (תא אלקטרוניקה)</td><td>49.0 × 27.0</td><td>1</td></tr>
+          </table>
+        </div>
+        <p style="margin-top:6px;">סה״כ 9 פלטות, שטח כולל כ-0.92 מ״ר — עדיין נכנס בנוחות בלוח 122×244 ס״מ אחד.</p>
+      </div>
+
+      <div class="card svg-card" data-steps="2">
+        <h2>📐 שרטוט חלקים ומידות (Flat Pattern)</h2>
+        <svg viewBox="0 0 320 540" xmlns="http://www.w3.org/2000/svg">
+          <text x="10" y="35" font-size="11" font-weight="700" fill="var(--cyan)">חזית + גב</text>
+          <rect x="100" y="20" width="135.2" height="78" fill="var(--box-color)" fill-opacity="0.28" stroke="var(--box-color)" stroke-width="1.5" rx="3"/>
+          <circle cx="223" cy="30" r="10" fill="var(--panel2)" stroke="var(--line)"/>
+          <text x="223" y="34" font-size="9" font-weight="800" text-anchor="middle" fill="var(--ink)">×2</text>
+          <line x1="100" y1="112" x2="235.2" y2="112" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="100" y1="108" x2="100" y2="116" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="235.2" y1="108" x2="235.2" y2="116" stroke="var(--cyan)" stroke-width="1"/>
+          <text x="167.6" y="124" font-size="10" text-anchor="middle" fill="var(--ink-dim)">52.0 × 30.0 ס״מ</text>
+
+          <text x="10" y="135" font-size="11" font-weight="700" fill="var(--cyan)">גג + רצפה</text>
+          <rect x="100" y="120" width="135.2" height="65" fill="var(--box-color)" fill-opacity="0.28" stroke="var(--box-color)" stroke-width="1.5" rx="3"/>
+          <circle cx="223" cy="130" r="10" fill="var(--panel2)" stroke="var(--line)"/>
+          <text x="223" y="134" font-size="9" font-weight="800" text-anchor="middle" fill="var(--ink)">×2</text>
+          <line x1="100" y1="199" x2="235.2" y2="199" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="100" y1="195" x2="100" y2="203" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="235.2" y1="195" x2="235.2" y2="203" stroke="var(--cyan)" stroke-width="1"/>
+          <text x="167.6" y="211" font-size="10" text-anchor="middle" fill="var(--ink-dim)">52.0 × 25.0 ס״מ</text>
+
+          <text x="10" y="235" font-size="11" font-weight="700" fill="var(--cyan)">דפנות צד</text>
+          <rect x="100" y="220" width="70.2" height="65" fill="var(--box-color)" fill-opacity="0.28" stroke="var(--box-color)" stroke-width="1.5" rx="3"/>
+          <circle cx="158" cy="230" r="10" fill="var(--panel2)" stroke="var(--line)"/>
+          <text x="158" y="234" font-size="9" font-weight="800" text-anchor="middle" fill="var(--ink)">×2</text>
+          <line x1="100" y1="299" x2="170.2" y2="299" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="100" y1="295" x2="100" y2="303" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="170.2" y1="295" x2="170.2" y2="303" stroke="var(--cyan)" stroke-width="1"/>
+          <text x="135" y="311" font-size="10" text-anchor="middle" fill="var(--ink-dim)">27.0 × 25.0 ס״מ</text>
+
+          <text x="10" y="335" font-size="11" font-weight="700" fill="var(--cyan)">מחיצה אנכית</text>
+          <rect x="100" y="320" width="70.2" height="36.4" fill="var(--cyan)" fill-opacity="0.15" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="4 3" rx="3"/>
+          <circle cx="158" cy="330" r="10" fill="var(--panel2)" stroke="var(--line)"/>
+          <text x="158" y="334" font-size="9" font-weight="800" text-anchor="middle" fill="var(--ink)">×2</text>
+          <line x1="100" y1="370.4" x2="170.2" y2="370.4" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="100" y1="366.4" x2="100" y2="374.4" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="170.2" y1="366.4" x2="170.2" y2="374.4" stroke="var(--cyan)" stroke-width="1"/>
+          <text x="135" y="382.4" font-size="10" text-anchor="middle" fill="var(--ink-dim)">27.0 × 14.0 ס״מ</text>
+
+          <text x="10" y="435" font-size="11" font-weight="700" fill="var(--cyan)">מחיצה אחורית</text>
+          <rect x="100" y="420" width="127.4" height="70.2" fill="var(--cyan)" fill-opacity="0.15" stroke="var(--cyan)" stroke-width="1.5" stroke-dasharray="4 3" rx="3"/>
+          <circle cx="215" cy="430" r="10" fill="var(--panel2)" stroke="var(--line)"/>
+          <text x="215" y="434" font-size="9" font-weight="800" text-anchor="middle" fill="var(--ink)">×1</text>
+          <line x1="100" y1="504.2" x2="227.4" y2="504.2" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="100" y1="500.2" x2="100" y2="508.2" stroke="var(--cyan)" stroke-width="1"/>
+          <line x1="227.4" y1="500.2" x2="227.4" y2="508.2" stroke="var(--cyan)" stroke-width="1"/>
+          <text x="163.7" y="520.2" font-size="10" text-anchor="middle" fill="var(--ink-dim)">49.0 × 27.0 ס״מ</text>
+        </svg>
+        <p style="margin-top:6px;">כל הפלטות בעובי 15 מ״מ. השרטוט אינו בקנה-מידה אחיד בין השורות — יש להיצמד לטבלת המידות המדויקת.</p>
+      </div>
+
+      <div class="card svg-card" data-steps="2">
+        <h2>🪚 תכנון חיתוך מלוח 122×244 ס״מ</h2>
+        <svg viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="292" height="172" fill="#0b0e14" stroke="var(--line)" stroke-width="1.5"/>
+          <rect x="10" y="10" width="127" height="73" fill="var(--box-color)" fill-opacity="0.25" stroke="var(--box-color)" stroke-width="1"/>
+          <text x="73" y="50" font-size="9" text-anchor="middle" fill="var(--ink)">חזית / גב</text>
+          <rect x="10" y="88" width="127" height="61" fill="var(--box-color)" fill-opacity="0.25" stroke="var(--box-color)" stroke-width="1"/>
+          <text x="73" y="121" font-size="9" text-anchor="middle" fill="var(--ink)">גג / רצפה</text>
+          <rect x="141" y="10" width="66" height="61" fill="var(--box-color)" fill-opacity="0.25" stroke="var(--box-color)" stroke-width="1"/>
+          <text x="174" y="43" font-size="9" text-anchor="middle" fill="var(--ink)">דפנות צד</text>
+          <rect x="141" y="75" width="66" height="38" fill="var(--cyan)" fill-opacity="0.15" stroke="var(--cyan)" stroke-width="1" stroke-dasharray="3 2"/>
+          <text x="174" y="97" font-size="8.5" text-anchor="middle" fill="var(--ink)">מחיצות אנכיות</text>
+          <rect x="211" y="10" width="76" height="55" fill="var(--cyan)" fill-opacity="0.15" stroke="var(--cyan)" stroke-width="1" stroke-dasharray="3 2"/>
+          <text x="249" y="40" font-size="8.5" text-anchor="middle" fill="var(--ink)">מחיצה אחורית</text>
+          <rect x="141" y="117" width="146" height="49" fill="none" stroke="var(--line)" stroke-width="1" stroke-dasharray="3 3"/>
+          <text x="214" y="145" font-size="9" text-anchor="middle" fill="var(--ink-dim)">רזרבה / פרויקטים נוספים</text>
+        </svg>
+        <p style="margin-top:6px;">כל 9 החלקים (שטח כולל כ-0.92 מ״ר) נחתכים בנוחות מלוח אחד 122×244 ס״מ. השרטוט להמחשה בלבד ואינו בקנה-מידה מדויק.</p>
+      </div>
+
+      <div class="card" data-steps="3">
+        <h2>🎯 קידוח מפתחים בחזית</h2>
+        <div class="tbl-wrap">
+          <table>
+            <tr><th>רכיב</th><th>קוטר קידוח</th></tr>
+            <tr><td>סאב-וופר 8״</td><td>182 מ״מ</td></tr>
+            <tr><td>מידרייג׳ 3.5״ (×2)</td><td>78 מ״מ</td></tr>
+            <tr><td>טוויטר 1.5״ (×2)</td><td>45 מ״מ</td></tr>
+          </table>
+        </div>
+        <p style="margin-top:6px;">קדח חור פיילוט קטן במרכז כל עיגול לפני שימוש במסור-כתר. הפעל תוויות דרייברים בהדמיה למעלה כדי לראות את המיקום המדויק על החזית.</p>
+      </div>
+
+      <div class="card" data-steps="2,4,5">
+        <h3>🔩 טכניקת חיבור פלטה לפלטה</h3>
+        <ul>
+          <li><strong>קדח מקדים:</strong> מקדח 3 מ״מ בעץ, לפני כל בורג — מונע סדיקה.</li>
+          <li><strong>שיקוע (Countersink):</strong> כך שראש הבורג ישקע בגובה אפס עם פני העץ.</li>
+          <li><strong>דבק נגרים:</strong> שכבה רציפה לאורך כל שפת מפגש, לפני הברגה.</li>
+          <li><strong>ברגים:</strong> ברגי סיבית 4×40 מ״מ במרווח של כ-8 ס״מ.</li>
+          <li><strong>הידוק:</strong> מהדקי נגרות לכ-30 דקות עד ייבוש ראשוני, ו-24 שעות לפני עבודה נוספת.</li>
+        </ul>
+      </div>
+
+      <div class="card warn" data-steps="5">
+        <h3>🧪 איטום ואקוסטיקה — קריטי לאיכות הבס</h3>
+        <ul>
+          <li><span class="tag crit">חובה</span>אטום את <strong>כל תפר בכל אחד מ-4 התאים</strong> עם פס סיליקון דק — כולל סביב שתי המחיצות האנכיות והמחיצה האחורית.</li>
+          <li>מלא את תא הסאב-וופר בצמר פוליאסטר (כ-50-60 גרם לכל 10 ליטר נפח). ניתן להוסיף כמות קטנה גם בתאי המיד-טוויטר.</li>
+          <li>קדח חור קטן אחד בגב עם אטם גומי (Grommet) להעברת כבל הסוללה החיצונית לתא האלקטרוניקה — אטום סביבו היטב.</li>
+          <li>שקול חיזוקי פינה פנימיים (Corner blocks) בזוויות הקופסה — ניתן להדפיס בתלת-ממד, ראה למטה.</li>
+        </ul>
+      </div>
+
+      <div class="card svg-card" data-steps="5">
+        <h2>📊 חלוקת נפח פנימי (הערכה)</h2>
+        <svg viewBox="0 0 260 150" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="80" cy="75" r="55" fill="none" stroke="var(--line)" stroke-width="16"/>
+          <circle cx="80" cy="75" r="55" fill="none" stroke="var(--sub)" stroke-width="16" stroke-dasharray="141.7 345.6" transform="rotate(-90 80 75)"/>
+          <circle cx="80" cy="75" r="55" fill="none" stroke="var(--mid)" stroke-width="16" stroke-dasharray="96.8 345.6" stroke-dashoffset="-141.7" transform="rotate(-90 80 75)"/>
+          <circle cx="80" cy="75" r="55" fill="none" stroke="var(--amp)" stroke-width="16" stroke-dasharray="107.1 345.6" stroke-dashoffset="-238.5" transform="rotate(-90 80 75)"/>
+          <text x="80" y="70" font-size="11" text-anchor="middle" fill="var(--ink)" font-weight="800">~29 ל׳</text>
+          <text x="80" y="84" font-size="8" text-anchor="middle" fill="var(--ink-dim)">נפח כולל</text>
+          <circle cx="175" cy="45" r="6" fill="var(--sub)"/>
+          <text x="187" y="49" font-size="9" fill="var(--ink)">תא סאב ≈ 12 ל׳</text>
+          <circle cx="175" cy="68" r="6" fill="var(--mid)"/>
+          <text x="187" y="72" font-size="9" fill="var(--ink)">תאי מיד-טוויטר ≈ 8 ל׳</text>
+          <circle cx="175" cy="91" r="6" fill="var(--amp)"/>
+          <text x="187" y="95" font-size="9" fill="var(--ink)">תא אלקטרוניקה ≈ 9 ל׳</text>
+          <text x="175" y="115" font-size="8" fill="var(--ink-dim)">הערכה להמחשה בלבד</text>
+        </svg>
+      </div>
+
+      <div class="card accent" data-steps="1,4">
+        <h2>🖨️ ייצוא קבצים להדפסת תלת-ממד (STL)</h2>
+        <p>אביזרי עזר משלימים בלבד — התיבה עצמה בנויה מעץ. המידות משוערות; מדוד את הציוד שברשותך בפועל לפני הדפסה.</p>
+        <div class="stl-grid">
+          <button class="btn" data-stl="battery"><span class="bic">🔋</span>מתקן סוללה (STL)</button>
+          <button class="btn" data-stl="corner"><span class="bic">📐</span>זווית חיזוק (STL)</button>
+          <button class="btn" data-stl="ring-sub"><span class="bic">⭕</span>טבעת סאב (STL)</button>
+          <button class="btn" data-stl="ring-mid"><span class="bic">⭕</span>טבעת מידריינג׳ (STL)</button>
+          <button class="btn" data-stl="ring-tw"><span class="bic">⭕</span>טבעת טוויטר (STL)</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ TAB 3: WIRING ============ -->
+  <div class="panel" id="panel-wire" role="tabpanel" aria-labelledby="tab-wire" tabindex="-1" data-panel="wire">
+    <div class="step-row" data-steprow="wire"></div>
+    <div class="scene compact" data-scene="wire">
+      <button class="scene-collapse-btn" data-scene-collapse aria-expanded="false">
+        <span data-label>📦 תצוגת רנטגן תלת-ממדית</span>
+        <span data-state>— הצג ▼</span>
+      </button>
+      <div class="scene-content collapsed" data-scene-content>
+        <div class="stage3d bg-grid" data-stage>
+          <div class="stage-tag">תצוגת רנטגן — אלקטרוניקה פנימית</div>
+          <div class="drag-hint" data-draghint>👆 גרור לסיבוב</div>
+        </div>
+        <div class="sheet">
+          <button class="sheet-handle" data-sheet-toggle aria-expanded="false">▼ בקרות תצוגה תלת-ממדית</button>
+          <div class="sheet-body hidden" data-sheet-body></div>
+        </div>
+      </div>
+    </div>
+    <div class="scroll">
+      <div class="scroll-head">
+        <span class="htxt">תרשימי חיווט, טווחי תדר ומערכת מתח</span>
+        <button class="print-btn" id="printWire">🖨️ הדפסה</button>
+      </div>
+
+      <div class="card accent" data-steps="1,6,7">
+        <h2>⚡ סדר עבודה בחיווט</h2>
+        <p>עקוב אחרי הסדר הבא כדי להימנע מקצרים ולהגן על הרכיבים הרגישים: קודם מערכת המתח, אחר-כך הרמקולים, ולבסוף בדיקת קיטוב וסגירה. הסוללה מותקנת <strong>חיצונית על הגב</strong> — כבל אחד בלבד עובר דרך פתח אטום לתא האלקטרוניקה הפנימי.</p>
+      </div>
+
+      <div class="card svg-card" data-steps="6,7">
+        <h2>🗺️ תרשים חיווט (Block Diagram)</h2>
+        <svg viewBox="0 0 340 310" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M0,0L10,5L0,10z" fill="var(--cyan)"/>
+            </marker>
+          </defs>
+          <rect x="95" y="10" width="150" height="36" rx="6" fill="var(--batt)" fill-opacity="0.18" stroke="var(--batt)" stroke-width="1.5"/>
+          <text x="170" y="28" font-size="11" text-anchor="middle" fill="var(--ink)" font-weight="700">סוללת Makita 18V</text>
+          <text x="170" y="41" font-size="7.5" text-anchor="middle" fill="var(--ink-dim)">(מותקנת חיצונית על הגב)</text>
+          <line x1="170" y1="46" x2="170" y2="58" stroke="var(--red)" stroke-width="2" marker-end="url(#arrow)"/>
+          <rect x="95" y="60" width="150" height="30" rx="6" fill="var(--red)" fill-opacity="0.15" stroke="var(--red)" stroke-width="1.5"/>
+          <text x="170" y="79" font-size="11" text-anchor="middle" fill="var(--ink)" font-weight="700">פיוז הגנה 20A</text>
+          <line x1="170" y1="90" x2="170" y2="102" stroke="var(--red)" stroke-width="2" marker-end="url(#arrow)"/>
+          <rect x="95" y="104" width="150" height="32" rx="6" fill="var(--amber)" fill-opacity="0.15" stroke="var(--amber)" stroke-width="1.5"/>
+          <text x="170" y="124" font-size="11" text-anchor="middle" fill="var(--ink)" font-weight="700">ממיר Step-Up 18V→24V</text>
+          <line x1="170" y1="136" x2="170" y2="150" stroke="var(--red)" stroke-width="2" marker-end="url(#arrow)"/>
+          <rect x="75" y="152" width="190" height="42" rx="6" fill="var(--amp)" fill-opacity="0.18" stroke="var(--amp)" stroke-width="1.5"/>
+          <text x="170" y="171" font-size="11" text-anchor="middle" fill="var(--ink)" font-weight="700">מגבר ZK-HT21</text>
+          <text x="170" y="185" font-size="8.5" text-anchor="middle" fill="var(--ink-dim)">Bluetooth · 2.1CH · USB/AUX</text>
+          <line x1="115" y1="194" x2="42" y2="248" stroke="var(--cyan)" stroke-width="1.6" marker-end="url(#arrow)"/>
+          <line x1="115" y1="194" x2="106" y2="212" stroke="var(--cyan)" stroke-width="1.6"/>
+          <line x1="170" y1="194" x2="170" y2="248" stroke="var(--cyan)" stroke-width="1.6" marker-end="url(#arrow)"/>
+          <line x1="225" y1="194" x2="234" y2="212" stroke="var(--cyan)" stroke-width="1.6"/>
+          <line x1="225" y1="194" x2="298" y2="248" stroke="var(--cyan)" stroke-width="1.6" marker-end="url(#arrow)"/>
+          <rect x="81" y="212" width="50" height="16" rx="3" fill="var(--panel2)" stroke="var(--amber)" stroke-width="1.2"/>
+          <text x="106" y="223.5" font-size="8" text-anchor="middle" fill="var(--amber)" font-weight="700">C 4.7µF</text>
+          <line x1="106" y1="228" x2="106" y2="248" stroke="var(--cyan)" stroke-width="1.6" marker-end="url(#arrow)"/>
+          <rect x="209" y="212" width="50" height="16" rx="3" fill="var(--panel2)" stroke="var(--amber)" stroke-width="1.2"/>
+          <text x="234" y="223.5" font-size="8" text-anchor="middle" fill="var(--amber)" font-weight="700">C 4.7µF</text>
+          <line x1="234" y1="228" x2="234" y2="248" stroke="var(--cyan)" stroke-width="1.6" marker-end="url(#arrow)"/>
+          <rect x="13" y="250" width="58" height="38" rx="5" fill="var(--mid)" fill-opacity="0.35" stroke="var(--mid)" stroke-width="1.5"/>
+          <text x="42" y="266" font-size="9" text-anchor="middle" fill="var(--ink)" font-weight="700">MID-L</text>
+          <text x="42" y="278" font-size="7.5" text-anchor="middle" fill="var(--ink-dim)">Ø78mm</text>
+          <rect x="77" y="250" width="58" height="38" rx="5" fill="var(--tw)" fill-opacity="0.25" stroke="var(--tw)" stroke-width="1.5"/>
+          <text x="106" y="266" font-size="9" text-anchor="middle" fill="var(--ink)" font-weight="700">TW-L</text>
+          <text x="106" y="278" font-size="7.5" text-anchor="middle" fill="var(--ink-dim)">Ø45mm</text>
+          <rect x="141" y="250" width="58" height="38" rx="5" fill="var(--sub)" fill-opacity="0.55" stroke="#555" stroke-width="1.5"/>
+          <text x="170" y="266" font-size="9" text-anchor="middle" fill="var(--ink)" font-weight="700">SUB</text>
+          <text x="170" y="278" font-size="7.5" text-anchor="middle" fill="var(--ink-dim)">Ø182mm</text>
+          <rect x="205" y="250" width="58" height="38" rx="5" fill="var(--tw)" fill-opacity="0.25" stroke="var(--tw)" stroke-width="1.5"/>
+          <text x="234" y="266" font-size="9" text-anchor="middle" fill="var(--ink)" font-weight="700">TW-R</text>
+          <text x="234" y="278" font-size="7.5" text-anchor="middle" fill="var(--ink-dim)">Ø45mm</text>
+          <rect x="269" y="250" width="58" height="38" rx="5" fill="var(--mid)" fill-opacity="0.35" stroke="var(--mid)" stroke-width="1.5"/>
+          <text x="298" y="266" font-size="9" text-anchor="middle" fill="var(--ink)" font-weight="700">MID-R</text>
+          <text x="298" y="278" font-size="7.5" text-anchor="middle" fill="var(--ink-dim)">Ø78mm</text>
+        </svg>
+        <p style="margin-top:6px;"><span style="color:var(--red);">━</span> קו מתח (חובה פיוז מיד אחרי הסוללה) &nbsp; <span style="color:var(--cyan);">━</span> קווי אודיו לרמקולים.</p>
+      </div>
+
+      <div class="card" data-steps="6">
+        <h3>1️⃣ מערכת הזנת מתח</h3>
+        <ul>
+          <li><strong>סוללת Makita 18V:</strong> מותקנת <strong>חיצונית על גב התיבה</strong> על מתקן החלקה (Slide rail) — בדיוק כמו על מקדחה. קל להחליף, לא תופסת נפח פנימי.</li>
+          <li><strong>מעבר כבל:</strong> חור אחד קטן ואטום (Grommet) בגב מוביל את שני הכבלים (+/-) לתא האלקטרוניקה הפנימי.</li>
+          <li><strong>מפסק ראשי:</strong> מומלץ מתג הדלקה/כיבוי נגיש בין הסוללה לשאר המערכת.</li>
+          <li><span class="tag crit">חובה</span><strong>פיוז הגנה 20A</strong> על כבל הפלוס (+), קרוב ככל האפשר לסוללה.</li>
+          <li><strong>ממיר מתח Step-Up:</strong> מעלה 18V → 24V לטובת מלוא העוצמה של מגבר ה-ZK-HT21.</li>
+          <li><strong>עובי כבלים:</strong> AWG14-16 בין הסוללה לממיר ולמגבר; AWG18 מספיק לכבלי איתות/בקרה.</li>
+        </ul>
+      </div>
+
+      <div class="card" data-steps="1,7">
+        <h3>🎛️ אודות מגבר ZK-HT21</h3>
+        <p>לוח מגבר Bluetooth בארכיטקטורת 2.1 (שני ערוצי סטריאו + ערוץ סאב-וופר ייעודי) עם כניסות USB/AUX ובקרות בס/טרבל. הספק בפועל תלוי בספק הכוח (בד״כ סביב 2×50W + כ-100W לסאב ב-24V) — כדאי לבדוק את הספיישל-שיט של הלוח הספציפי שברשותך.</p>
+      </div>
+
+      <div class="card warn" data-steps="7">
+        <h3>2️⃣ חיווט רמקולים וקרוסאובר לטוויטרים</h3>
+        <ul>
+          <li><strong>סאב-וופר (ערוץ Bass):</strong> חיבור ישיר מיציאת הסאב במגבר, כבל עבה (AWG16), אדום לפלוס ⊕ שחור למינוס ⊖.</li>
+          <li><strong>מידרייג׳ים (L/R):</strong> חיבור סטריאו רגיל מערוצי L/R של המגבר.</li>
+          <li><span class="tag crit">קריטי</span><strong>טוויטרים:</strong> הלחם <strong>קבל 4.7µF</strong> בטור על כבל הפלוס (+) של כל טוויטר.</li>
+          <li>שמור על <strong>פסיפית קיטוב אחידה</strong> בין כל הדרייברים — קיטוב הפוך גורם לביטול פאזה וירידה דרמטית בבס.</li>
+        </ul>
+      </div>
+
+      <div class="card svg-card" data-steps="3,7">
+        <h2>📈 טווחי תדר משוערים לפי דרייבר</h2>
+        <svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
+          <text x="4" y="15" font-size="9" fill="var(--ink)" font-weight="700">סאב</text>
+          <rect x="45" y="6" width="55" height="14" rx="3" fill="var(--sub)" stroke="#555"/>
+          <text x="4" y="55" font-size="9" fill="var(--ink)" font-weight="700">מידריינג׳</text>
+          <rect x="90" y="46" width="90" height="14" rx="3" fill="var(--mid)" fill-opacity="0.6" stroke="var(--mid)"/>
+          <text x="4" y="95" font-size="9" fill="var(--ink)" font-weight="700">טוויטר</text>
+          <rect x="165" y="86" width="120" height="14" rx="3" fill="var(--tw)" fill-opacity="0.6" stroke="var(--tw)"/>
+          <text x="45" y="30" font-size="7.5" fill="var(--ink-dim)">40–200Hz</text>
+          <text x="90" y="70" font-size="7.5" fill="var(--ink-dim)">200Hz–4kHz</text>
+          <text x="165" y="110" font-size="7.5" fill="var(--ink-dim)">4kHz–20kHz (מוגן ע״י קבל 4.7µF)</text>
+        </svg>
+        <p style="margin-top:6px;">ערכים משוערים בלבד לשם המחשת חלוקת התפקידים בין הדרייברים.</p>
+      </div>
+
+      <div class="card" data-steps="7,8">
+        <h3>🔌 חיבורים וגימור</h3>
+        <ul>
+          <li>השתמש במחברי ברגים (Screw terminals) או שקעי JST/XT60 לחיבורי הסוללה.</li>
+          <li>עטוף כל הלחמה בחום-כיווץ, וקבע כבלים בתוך התיבה עם קליפסים.</li>
+          <li>לפני סגירה סופית: הפעל בעוצמה נמוכה ובדוק כל דרייבר בנפרד (נתק את היתר זמנית).</li>
+        </ul>
+      </div>
+
+      <div class="card accent" data-steps="8">
+        <h2>💡 תוספת אופציונלית: תאורה ואפקטים לתיבה (LED)</h2>
+        <p>תוספת נפוצה ומרשימה — טבעת LED הניתנת לכתובת (RGB) שרוטטת לפי עוצמת הבאס.</p>
+        <ul>
+          <li><strong>רכיבים:</strong> רצועת LED כתובת (WS2812B) או רצועת RGB 12V + בקר סאונד-רי-אקטיבי.</li>
+          <li><strong>מיקום מומלץ:</strong> טבעת סביב הסאב-וופר, או פס לאורך היקף החזית.</li>
+          <li><span class="tag crit">בטיחות</span>הזן מ<strong>פיוז נפרד</strong> וממיר מתח משלה — לעולם אל תמשוך מתח מיציאת הרמקולים.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ TAB 4: STEPS ============ -->
+  <div class="panel" id="panel-steps" role="tabpanel" aria-labelledby="tab-steps" tabindex="-1" data-panel="steps">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progFill"></div></div>
+      <div class="progress-txt" id="progTxt">0 / 8 שלבים הושלמו</div>
+      <div class="btn-row" style="margin-top:8px;">
+        <button class="btn" id="shareProgress"><span class="bic">📤</span>שתף התקדמות</button>
+        <button class="btn" id="resetProgress"><span class="bic">↺</span>איפוס התקדמות</button>
+      </div>
+    </div>
+    <div class="scroll" id="stepsScroll">
+
+      <div class="step-card" data-step="1">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title"><span>איסוף רכיבים וחומרים</span><span class="step-time">⏱ יום 0</span></div>
+          <p>ודא שכל הרכיבים ברשימה נמצאים ברשותך: 8 דרייברים, מגבר ZK-HT21, סוללת/מתקן Makita חיצוני, ממיר Step-Up, פיוז 20A, קבל 4.7µF ×2, לוח בירץ׳ 15 מ״מ וחומרי החיבור.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="wood">📐 לתכנון וחיתוך</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" data-step="2">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title"><span>חיתוך פלטות העץ</span><span class="step-time">⏱ 2-3 שעות</span></div>
+          <p>חתוך את 9 הפלטות לפי טבלת המידות והשרטוט בלשונית "נגרות" (כולל 2 מחיצות אנכיות + מחיצה אחורית אחת). סמן כיוון סיבים ובדוק זוויות 90° בכל חיתוך.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="wood">📐 לתכנון וחיתוך</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" data-step="3">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title"><span>קידוח מפתחי דרייברים</span><span class="step-time">⏱ 1-2 שעות</span></div>
+          <p>קדח פיילוט במרכז כל עיגול, ואז השתמש במסור-כתר בקטרים 182/78/45 מ״מ בפלטת החזית בלבד. הפעל תוויות דרייברים בהדמיית התלת-ממד כדי לראות את המיקום המדויק.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="model">📦 להדמיה</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" data-step="4">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title"><span>הרכבה יבשה (Dry-fit)</span><span class="step-time">⏱ 30 דק׳</span></div>
+          <p>הרכב את כל הקופסה ללא דבק, כולל שתי המחיצות האנכיות והמחיצה האחורית (סה״כ 4 תאים), ובדוק שכל הפלטות נפגשות בזוויות ישרות וללא רווחים.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="wood">📐 לתכנון וחיתוך</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" data-step="5">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title"><span>הדבקה, הברגה ואיטום</span><span class="step-time">⏱ שעה + 24ש׳ ייבוש</span></div>
+          <p>קדח מקדים, שקען, מרח דבק נגרים והברג. אטום כל תפר בכל אחד מ-4 התאים בסיליקון, קדח חור אטום למעבר כבל הסוללה מהגב, והכנס צמר פוליאסטר לתא הסאב לפני הדבקת הפלטה האחרונה.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="wood">📐 לתכנון וחיתוך</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" data-step="6">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-title"><span>התקנת סוללה חיצונית ומערכת מתח</span><span class="step-time">⏱ 1-2 שעות</span></div>
+          <p>הרכב את מתקן ההחלקה לסוללה על גב התיבה, העבר כבלים דרך הפתח האטום, חבר פיוז 20A מיד ביציאה מהפלוס, חבר ממיר Step-Up ל-24V, והוסף מפסק ראשי נגיש. בדוק מתח ביציאה עם מולטימטר לפני חיבור המגבר.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="wire">⚡ לחיווט</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" data-step="7">
+        <div class="step-num">7</div>
+        <div class="step-body">
+          <div class="step-title"><span>חיווט דרייברים והתקנת אלקטרוניקה</span><span class="step-time">⏱ 2 שעות</span></div>
+          <p>חבר את הסאב, המידרייג׳ים והטוויטרים (עם קבל 4.7µF בטור לכל טוויטר) לפי פוליות אחידה. הרכב את המגבר בתא האלקטרוניקה האחורי, ובדוק כל ערוץ בנפרד.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="wire">⚡ לחיווט</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-card" data-step="8">
+        <div class="step-num">8</div>
+        <div class="step-body">
+          <div class="step-title"><span>הרכבה סופית, גימור ובדיקה</span><span class="step-time">⏱ 1-2 שעות</span></div>
+          <p>הברג את פלטת הגב האחרונה (עם מתקן הסוללה מותקן), התקן ידית נשיאה, רגלי גומי ופינות מגן (ניתן להדפיס בתלת-ממד). השחז ב-220/400 וצפה בשמן דנמרקי / לכה מט. בצע בדיקת האזנה מלאה בעוצמה עולה בהדרגה.</p>
+          <div class="step-foot">
+            <label class="step-check"><input type="checkbox" class="stepChk"> סמן כהושלם</label>
+            <button class="step-view-btn" data-jump="wire">⚡ לחיווט</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============ Settings persistence ============
+     View preferences (color, active tab, toggle states) are stored in
+     localStorage under one JSON blob, the same way build-progress already
+     was in the original file. Re-opening the guide on day 2 of the build
+     picks up right where you left it. */
+  var SETTINGS_KEY = "boombox_settings_v1";
+  function loadSettings(){
+    try { return JSON.parse(window.localStorage.getItem(SETTINGS_KEY)) || {}; }
+    catch(e){ return {}; }
+  }
+  function saveSettings(patch){
+    var s = loadSettings();
+    Object.keys(patch).forEach(function(k){ s[k] = patch[k]; });
+    try { window.localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); } catch(e){}
+  }
+  var settings = loadSettings();
+
+  /* ============ Haptic feedback ============
+     navigator.vibrate simply doesn't exist on desktop / iOS browsers,
+     so this quietly no-ops there — safe to sprinkle around freely. */
+  function haptic(pattern){
+    if (navigator.vibrate) { try { navigator.vibrate(pattern || 8); } catch(e){} }
+  }
+
+  /* ============ Toast notifications ============
+     A small non-blocking confirmation banner, used for actions that have
+     no other visible feedback (a file download, a clipboard copy). */
+  var toastEl = document.getElementById("toast");
+  var toastTimer = null;
+  function showToast(msg){
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function(){ toastEl.classList.remove("show"); }, 2400);
+  }
+
+  /* ============ Share / copy helpers ============
+     Printing from a phone browser is clunky, so anywhere the guide would
+     offer "print" it also offers "share" — the native share sheet on
+     mobile (navigator.share), or a clipboard copy as a fallback so the
+     text can be pasted into WhatsApp/Notes/etc. */
+  function tableToText(table){
+    var lines = [];
+    table.querySelectorAll("tr").forEach(function(tr){
+      var cells = Array.prototype.map.call(tr.querySelectorAll("th,td"), function(c){ return c.textContent.trim(); });
+      lines.push(cells.join("   "));
+    });
+    return lines.join("\n");
+  }
+  function shareOrCopy(title, text){
+    if (navigator.share){
+      navigator.share({ title: title, text: text }).catch(function(){ /* user cancelled the share sheet */ });
+      return;
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text)
+        .then(function(){ showToast("הועתק ללוח! ✅"); })
+        .catch(function(){ showToast("שגיאה בהעתקה ללוח"); });
+      return;
+    }
+    showToast("שיתוף/העתקה אינם נתמכים בדפדפן זה");
+  }
+
+  /* ============ Tabs ============ */
+  var tabs = document.querySelectorAll(".tab");
+  var panels = document.querySelectorAll(".panel");
+
+  function switchTab(target, silent){
+    tabs.forEach(function(b){
+      var active = b.getAttribute("data-tab") === target;
+      b.classList.toggle("active", active);
+      b.setAttribute("aria-selected", active ? "true" : "false");
+    });
+    panels.forEach(function(p){
+      var active = p.getAttribute("data-panel") === target;
+      p.classList.toggle("active", active);
+      p.setAttribute("aria-hidden", active ? "false" : "true");
+    });
+    if (silent) return; // used only for the silent startup restore, below
+    saveSettings({ tab: target });
+    beep();
+    haptic(6);
+    var activePanel = document.getElementById("panel-" + target);
+    if (activePanel) activePanel.focus({ preventScroll: true });
+  }
+  tabs.forEach(function(btn){ btn.addEventListener("click", function(){ switchTab(btn.getAttribute("data-tab")); }); });
+  document.querySelectorAll("[data-jump]").forEach(function(btn){
+    btn.addEventListener("click", function(){ switchTab(btn.getAttribute("data-jump")); });
+  });
+
+  /* ============ Sound effect (optional, off by default, boosted volume) ============ */
+  var soundOn = false;
+  var audioCtx = null;
+  function beep(freq){
+    if (!soundOn) return;
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq || 620;
+      gain.gain.value = 0.35;
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+      osc.stop(audioCtx.currentTime + 0.13);
+    } catch(e){}
+  }
+
+  function pulse(el){
+    el.classList.remove("pulse");
+    void el.offsetWidth;
+    el.classList.add("pulse");
+    setTimeout(function(){ el.classList.remove("pulse"); }, 500);
+  }
+
+  function wireSheet(root){
+    var toggle = root.querySelector("[data-sheet-toggle]");
+    var body = root.querySelector("[data-sheet-body]");
+    var open = false;
+    var closedText = toggle.textContent;
+    toggle.addEventListener("click", function(){
+      open = !open;
+      body.classList.toggle("hidden", !open);
+      toggle.textContent = open ? "▲ הסתר בקרות" : closedText;
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+      beep(500); haptic(6);
+    });
+  }
+  wireSheet(document.querySelector(".sheet"));
+
+  /* whole-scene collapse (wood / wire tabs).
+     Bug fix: the original derived this button's label with
+     textContent.replace("הצג ▼", "")/.replace("הסתר ▲", "") — after the
+     first click the leftover "—" was never cleaned up, so a second click
+     produced a doubled dash ("— —"). Splitting the label and the
+     open/closed state into two separate <span>s removes the need for any
+     string surgery, so the bug can't reoccur. */
+  document.querySelectorAll("[data-scene-collapse]").forEach(function(btn){
+    var scene = btn.closest(".scene");
+    var content = scene.querySelector("[data-scene-content]");
+    var stateEl = btn.querySelector("[data-state]");
+    btn.addEventListener("click", function(){
+      var collapsed = content.classList.toggle("collapsed");
+      stateEl.textContent = collapsed ? "— הצג ▼" : "— הסתר ▲";
+      btn.setAttribute("aria-expanded", collapsed ? "false" : "true");
+      beep(560); haptic(6);
+    });
+  });
+
+  /* ============ 3D scene factory ============ */
+  var SCALE = 6, W = 52*SCALE, H = 30*SCALE, D = 25*SCALE;
+  var sideOffsetX = (W - D) / 2, topOffsetY = (H - D) / 2;
+  var allParts = [];
+  var allFaces = [];
+
+  function createBoxScene(root, opts){
+    opts = opts || {};
+    var stage = root.querySelector("[data-stage]");
+    var modelEl = document.createElement("div");
+    modelEl.className = "model3d";
+    modelEl.style.width = W + "px";
+    modelEl.style.height = H + "px";
+    stage.insertBefore(modelEl, stage.firstChild);
+
+    var faces = [];
+    function addFace(cls, w, h, left, top, rotCss, counterRotCss, baseDist, steps, labelText){
+      var el = document.createElement("div");
+      el.className = "face " + cls;
+      el.style.width = w + "px";
+      el.style.height = h + "px";
+      el.style.left = left + "px";
+      el.style.top = top + "px";
+      if (steps) el.dataset.steps = steps;
+      function apply(extra){
+        var d = baseDist + (extra || 0);
+        el.style.transform = (rotCss ? rotCss + " " : "") + "translateZ(" + d + "px)";
+      }
+      apply(0);
+      el._applyExplode = apply;
+      modelEl.appendChild(el);
+      if (labelText){
+        var lbl = document.createElement("div");
+        lbl.className = "face-label";
+        lbl.textContent = labelText;
+        lbl.style.transform = (counterRotCss ? counterRotCss + " " : "") + "translateZ(3px)";
+        el.appendChild(lbl);
+      }
+      faces.push(el);
+      return el;
+    }
+
+    var faceFront = addFace("face-baffle", W, H, 0, 0, "", "", D/2, "2,3,4,5,8", "חזית · 52.0×30.0 ס״מ");
+    var faceBack  = addFace("face-solid", W, H, 0, 0, "rotateY(180deg)", "rotateY(180deg)", D/2, "2,4,5,6,8", "גב · 52.0×30.0 ס״מ");
+    addFace("face-solid", D, H, sideOffsetX, 0, "rotateY(-90deg)", "rotateY(90deg)", W/2, "2,4,5,8", "דופן שמאל · 27.0×25.0 ס״מ");
+    addFace("face-solid", D, H, sideOffsetX, 0, "rotateY(90deg)", "rotateY(-90deg)", W/2, "2,4,5,8", "דופן ימין · 27.0×25.0 ס״מ");
+    addFace("face-solid", W, D, 0, topOffsetY, "rotateX(90deg)", "rotateX(-90deg)", H/2, "2,4,5,8", "גג · 52.0×25.0 ס״מ");
+    addFace("face-solid", W, D, 0, topOffsetY, "rotateX(-90deg)", "rotateX(90deg)", H/2, "2,4,5,8", "רצפה · 52.0×25.0 ס״מ");
+
+    function addPart(parentEl, cls, w, h, cx, cy, z, steps, labelText){
+      var el = document.createElement("div");
+      el.className = "part " + cls;
+      el.style.width = w + "px";
+      el.style.height = h + "px";
+      el.style.left = (cx - w/2) + "px";
+      el.style.top = (cy - h/2) + "px";
+      el.dataset.baseZ = z;
+      el.style.transform = "translateZ(" + z + "px)";
+      if (steps) el.dataset.steps = steps;
+      parentEl.appendChild(el);
+      if (labelText){
+        var lbl = document.createElement("div");
+        lbl.className = "part-label";
+        lbl.textContent = labelText;
+        lbl.style.transform = "translateZ(6px) translate(-50%,4px)";
+        el.appendChild(lbl);
+      }
+      return el;
+    }
+
+    var subD = 18.2*SCALE, midD = 7.8*SCALE, twD = 4.5*SCALE;
+    var cxL = W*0.20, cxR = W*0.80, cxC = W*0.50;
+    var cyTw = H*0.10, cyMid = H*0.34, cySub = H*0.60;
+
+    var driverParts = [];
+    driverParts.push(addPart(faceFront, "driver-sub", subD, subD, cxC, cySub, 4, "3,7,8", "SUB Ø182mm"));
+    driverParts.push(addPart(faceFront, "driver-mid", midD, midD, cxL, cyMid, 4, "3,7,8", "MID Ø78mm"));
+    driverParts.push(addPart(faceFront, "driver-mid", midD, midD, cxR, cyMid, 4, "3,7,8", "MID Ø78mm"));
+    driverParts.push(addPart(faceFront, "driver-tw", twD, twD, cxL, cyTw, 4, "3,7,8", "TW Ø45mm"));
+    driverParts.push(addPart(faceFront, "driver-tw", twD, twD, cxR, cyTw, 4, "3,7,8", "TW Ø45mm"));
+
+    /* internal partition walls: 2 vertical (isolate mid/tw chambers) + 1 rear (electronics) */
+    var cutawayParts = [];
+    cutawayParts.push(addPart(faceFront, "wall", 3, H*0.75, 95, H*0.5, -20, "2,4,5", "מחיצה אנכית · 27.0×14.0 ס״מ"));
+    cutawayParts.push(addPart(faceFront, "wall", 3, H*0.75, 217, H*0.5, -20, "2,4,5", "מחיצה אנכית · 27.0×14.0 ס״מ"));
+    cutawayParts.push(addPart(faceFront, "wall", W*0.82, H*0.75, cxC, H*0.5, -55, "2,4,5", "מחיצה אחורית · 49.0×27.0 ס״מ"));
+    cutawayParts.push(addPart(faceFront, "rectlbl amp", 8.6*SCALE, 3.6*SCALE, W*0.66, H*0.60, -55, "6,7", "AMP ZK-HT21"));
+    cutawayParts.forEach(function(p){ p.style.opacity = 0; });
+
+    /* battery: mounted externally on the BACK panel — always visible, not tied to opacity slider */
+    var battPart = addPart(faceBack, "batt", 9*SCALE, 3.6*SCALE, W*0.5, H*0.5, 3, "1,6", "BATT 18V (חיצוני — סובב לראות)");
+
+    faces.forEach(function(f){ allFaces.push(f); });
+    driverParts.concat(cutawayParts).forEach(function(p){ allParts.push(p); });
+    allParts.push(battPart);
+
+    /* rotation drag */
+    var rx = opts.rx0 != null ? opts.rx0 : -18;
+    var ry = opts.ry0 != null ? opts.ry0 : 32;
+
+    /* Fit-to-screen scale.
+       W/H/D above are fixed pixel sizes (52*SCALE etc.) — on a narrow
+       phone, or while the box is rotated toward a diagonal, the model can
+       be wider than the viewport and get clipped by the stage's
+       overflow:hidden. Rather than rebuild the whole scene per breakpoint,
+       we measure the stage and apply one extra `scale()` in front of the
+       rotation, sized to the worst-case (diagonal) bounding box — so the
+       model always fits, on any screen, at any rotation. */
+    var diagW = Math.sqrt(W*W + D*D);
+    var diagH = Math.sqrt(H*H + D*D);
+    var fitScale = 1;
+    function computeFitScale(){
+      var availW = stage.clientWidth - 28;
+      var availH = stage.clientHeight - 28;
+      if (availW <= 0 || availH <= 0) return;
+      var s = Math.min(1, availW / diagW, availH / diagH);
+      fitScale = (isFinite(s) && s > 0) ? s : 1;
+    }
+    function applyRotation(){
+      modelEl.style.transform = "scale(" + fitScale.toFixed(3) + ") rotateX(" + rx + "deg) rotateY(" + ry + "deg)";
+    }
+    computeFitScale();
+    applyRotation();
+    if (window.ResizeObserver){
+      new ResizeObserver(function(){ computeFitScale(); applyRotation(); }).observe(stage);
+    } else {
+      window.addEventListener("resize", function(){ computeFitScale(); applyRotation(); });
+    }
+
+    var dragging = false, lastX = 0, lastY = 0;
+    var dragHint = root.querySelector("[data-draghint]");
+    stage.addEventListener("pointerdown", function(e){
+      dragging = true; lastX = e.clientX; lastY = e.clientY;
+      if (dragHint) dragHint.style.display = "none";
+    });
+    window.addEventListener("pointermove", function(e){
+      if (!dragging) return;
+      var dx = e.clientX - lastX, dy = e.clientY - lastY;
+      ry += dx * 0.4; rx -= dy * 0.4;
+      if (rx > 60) rx = 60; if (rx < -60) rx = -60;
+      lastX = e.clientX; lastY = e.clientY;
+      applyRotation();
+    });
+    window.addEventListener("pointerup", function(){ dragging = false; });
+
+    /* control sheet: explode + opacity + reset */
+    var sheetBody = root.querySelector("[data-sheet-body]");
+    var explodeMode = opts.explodeMode || "drivers";
+    var explodeLabel = explodeMode === "panels" ? "פירוק פאנלים (הרכבה)" : "פירוק דרייברים";
+
+    var row1 = document.createElement("div");
+    row1.className = "ctl-row";
+    row1.innerHTML = '<label>' + explodeLabel + '</label><span class="val mono">0%</span>';
+    var explodeInput = document.createElement("input");
+    explodeInput.type = "range"; explodeInput.min = "0"; explodeInput.max = "100"; explodeInput.value = "0";
+    explodeInput.setAttribute("aria-label", explodeLabel);
+    explodeInput.style.marginBottom = "12px";
+
+    var row2 = document.createElement("div");
+    row2.className = "ctl-row";
+    row2.innerHTML = '<label>שקיפות דופן — רנטגן פנימי</label><span class="val mono">' + (opts.opacity0 != null ? opts.opacity0 : 100) + '%</span>';
+    var opacityInput = document.createElement("input");
+    opacityInput.type = "range"; opacityInput.min = "0"; opacityInput.max = "100";
+    opacityInput.value = String(opts.opacity0 != null ? opts.opacity0 : 100);
+    opacityInput.setAttribute("aria-label", "שקיפות דופן — רנטגן פנימי");
+    opacityInput.style.marginBottom = "6px";
+
+    var resetBtnRow = document.createElement("div");
+    resetBtnRow.className = "btn-row";
+    var resetBtn = document.createElement("button");
+    resetBtn.className = "btn"; resetBtn.innerHTML = '<span class="bic">↺</span>איפוס תצוגה';
+    resetBtnRow.appendChild(resetBtn);
+
+    sheetBody.appendChild(row1);
+    sheetBody.appendChild(explodeInput);
+    sheetBody.appendChild(row2);
+    sheetBody.appendChild(opacityInput);
+    sheetBody.appendChild(resetBtnRow);
+
+    function setExplode(v){
+      row1.querySelector(".val").textContent = v + "%";
+      var offset = (v / 100) * 60;
+      if (explodeMode === "panels"){
+        faces.forEach(function(f){ f._applyExplode(offset); });
+      } else {
+        driverParts.forEach(function(p){ p.style.transform = "translateZ(" + (4 + offset) + "px)"; });
+      }
+    }
+    explodeInput.addEventListener("input", function(){ setExplode(parseInt(explodeInput.value, 10)); });
+
+    function setOpacity(v){
+      row2.querySelector(".val").textContent = v + "%";
+      var alpha = v / 100;
+      faceFront.style.opacity = 0.15 + alpha * 0.85;
+      cutawayParts.forEach(function(p){ p.style.opacity = 1 - alpha; });
+    }
+    opacityInput.addEventListener("input", function(){ setOpacity(parseInt(opacityInput.value, 10)); });
+    setOpacity(parseInt(opacityInput.value, 10));
+
+    resetBtn.addEventListener("click", function(){
+      rx = opts.rx0 != null ? opts.rx0 : -18;
+      ry = opts.ry0 != null ? opts.ry0 : 32;
+      applyRotation();
+      explodeInput.value = 0; setExplode(0);
+      opacityInput.value = opts.opacity0 != null ? opts.opacity0 : 100; setOpacity(parseInt(opacityInput.value, 10));
+      beep(700); haptic(10);
+    });
+
+    wireSheet(root.querySelector(".sheet"));
+
+    return { faces: faces, parts: driverParts.concat(cutawayParts) };
+  }
+
+  createBoxScene(document.querySelector('[data-scene="model"]'), { explodeMode: "drivers", opacity0: 100 });
+  createBoxScene(document.querySelector('[data-scene="wood"]'),  { explodeMode: "panels",  opacity0: 100, rx0: -22, ry0: 28 });
+  createBoxScene(document.querySelector('[data-scene="wire"]'),  { explodeMode: "drivers", opacity0: 35,  rx0: -14, ry0: 36 });
+
+  /* ============ Global appearance toggles ============ */
+  function wireGlobalToggle(id, settingsKey, applyFn, startOn){
+    var btn = document.getElementById(id);
+    var on = !!startOn;
+    function apply(){
+      btn.classList.toggle("on", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      applyFn(on);
+    }
+    btn.addEventListener("click", function(){
+      on = !on;
+      apply();
+      var patch = {}; patch[settingsKey] = on;
+      saveSettings(patch);
+      pulse(btn); beep(); haptic(6);
+    });
+    apply();
+  }
+
+  wireGlobalToggle("tgPartLabels", "partLabels", function(on){
+    document.querySelectorAll(".model3d").forEach(function(m){ m.classList.toggle("show-part-labels", on); });
+  }, settings.partLabels === true);
+
+  wireGlobalToggle("tgFaceLabels", "faceLabels", function(on){
+    document.querySelectorAll(".model3d").forEach(function(m){ m.classList.toggle("show-face-labels", on); });
+  }, settings.faceLabels === true);
+
+  wireGlobalToggle("tgGrid", "grid", function(on){
+    document.querySelectorAll(".stage3d").forEach(function(s){ s.classList.toggle("bg-grid", on); if(on) s.classList.remove("bg-plain"); });
+  }, settings.grid !== false); // default ON, matching the original markup
+
+  wireGlobalToggle("tgWire", "wire", function(on){
+    document.querySelectorAll(".model3d").forEach(function(m){ m.classList.toggle("wire", on); });
+  }, settings.wire === true);
+
+  wireGlobalToggle("tgSound", "sound", function(on){ soundOn = on; }, settings.sound === true);
+
+  wireGlobalToggle("tgLegend", "legend", function(on){
+    document.getElementById("legendBox").style.display = on ? "block" : "none";
+  }, settings.legend === true);
+
+  var bgStates = ["bg-grid", "bg-plain", ""];
+  var bgIndex = settings.bg != null ? settings.bg : 0;
+  function applyBg(){
+    document.querySelectorAll(".stage3d").forEach(function(s){
+      s.classList.remove("bg-grid", "bg-plain");
+      if (bgStates[bgIndex]) s.classList.add(bgStates[bgIndex]);
+    });
+  }
+  applyBg();
+  document.getElementById("tgBg").addEventListener("click", function(){
+    bgIndex = (bgIndex + 1) % bgStates.length;
+    applyBg();
+    saveSettings({ bg: bgIndex });
+    pulse(document.getElementById("tgBg"));
+    beep(); haptic(6);
+  });
+
+  /* box color — the custom-color wheel now gets its own "selected" ring
+     (the original left it looking unselected even when it was the active
+     color), and the last choice is remembered across visits. */
+  var customSwatchLabel = document.querySelector(".swatch-custom");
+  function setBoxColor(hex, activeBtn, silent){
+    document.documentElement.style.setProperty("--box-color", hex);
+    document.querySelectorAll(".swatch").forEach(function(s){ s.classList.remove("sel"); });
+    customSwatchLabel.classList.remove("sel");
+    if (activeBtn) activeBtn.classList.add("sel"); else customSwatchLabel.classList.add("sel");
+    if (silent) return;
+    saveSettings({ color: hex });
+    beep(760); haptic(6);
+  }
+  document.querySelectorAll(".swatch[data-color]").forEach(function(btn){
+    btn.addEventListener("click", function(){ setBoxColor(btn.getAttribute("data-color"), btn); });
+  });
+  document.getElementById("customColor").addEventListener("input", function(e){
+    setBoxColor(e.target.value, null);
+  });
+  if (settings.color){
+    var matchedSwatch = null;
+    document.querySelectorAll(".swatch[data-color]").forEach(function(s){
+      if (s.getAttribute("data-color").toLowerCase() === settings.color.toLowerCase()) matchedSwatch = s;
+    });
+    setBoxColor(settings.color, matchedSwatch, true);
+    document.getElementById("customColor").value = settings.color;
+  }
+
+  /* ============ STL export (printable accessories) ============ */
+  function facet3(v1,v2,v3){
+    return "facet normal 0 0 0\nouter loop\nvertex " + v1.join(" ") + "\nvertex " + v2.join(" ") + "\nvertex " + v3.join(" ") + "\nendloop\nendfacet\n";
+  }
+  function boxSTL(name, w,h,d){
+    var x0=0,x1=w,y0=0,y1=h,z0=0,z1=d;
+    var A=[x0,y0,z0],B=[x1,y0,z0],C=[x1,y1,z0],D2=[x0,y1,z0],
+        E=[x0,y0,z1],F=[x1,y0,z1],G=[x1,y1,z1],H2=[x0,y1,z1];
+    var tris=[[A,B,C],[A,C,D2],[E,H2,G],[E,G,F],[A,D2,H2],[A,H2,E],[B,F,G],[B,G,C],[A,E,F],[A,F,B],[D2,C,G],[D2,G,H2]];
+    var out="solid "+name+"\n";
+    tris.forEach(function(t){ out+=facet3(t[0],t[1],t[2]); });
+    out+="endsolid "+name+"\n";
+    return out;
+  }
+  function ringSTL(name, outerR, innerR, thickness, segments){
+    segments = segments || 48;
+    var out="solid "+name+"\n";
+    var z0=0,z1=thickness;
+    for(var i=0;i<segments;i++){
+      var a0=(i/segments)*2*Math.PI, a1=((i+1)/segments)*2*Math.PI;
+      var ox0=[outerR*Math.cos(a0),outerR*Math.sin(a0),z0], ox1=[outerR*Math.cos(a1),outerR*Math.sin(a1),z0];
+      var ox0t=[outerR*Math.cos(a0),outerR*Math.sin(a0),z1], ox1t=[outerR*Math.cos(a1),outerR*Math.sin(a1),z1];
+      var ix0=[innerR*Math.cos(a0),innerR*Math.sin(a0),z0], ix1=[innerR*Math.cos(a1),innerR*Math.sin(a1),z0];
+      var ix0t=[innerR*Math.cos(a0),innerR*Math.sin(a0),z1], ix1t=[innerR*Math.cos(a1),innerR*Math.sin(a1),z1];
+      out+=facet3(ox0,ox1,ox1t); out+=facet3(ox0,ox1t,ox0t);
+      out+=facet3(ix0,ix1t,ix1); out+=facet3(ix0,ix0t,ix1t);
+      out+=facet3(ox0t,ox1t,ix1t); out+=facet3(ox0t,ix1t,ix0t);
+      out+=facet3(ox0,ix0,ix1); out+=facet3(ox0,ix1,ox1);
+    }
+    out+="endsolid "+name+"\n";
+    return out;
+  }
+  function prismSTL(name, legMM, depthMM){
+    var A=[0,0,0],B=[legMM,0,0],C=[0,legMM,0];
+    var A2=[0,0,depthMM],B2=[legMM,0,depthMM],C2=[0,legMM,depthMM];
+    var out="solid "+name+"\n";
+    out+=facet3(A,B,C); out+=facet3(A2,C2,B2);
+    out+=facet3(A,B,B2); out+=facet3(A,B2,A2);
+    out+=facet3(B,C,C2); out+=facet3(B,C2,B2);
+    out+=facet3(C,A,A2); out+=facet3(C,A2,C2);
+    out+="endsolid "+name+"\n";
+    return out;
+  }
+  function downloadText(filename, text){
+    var blob = new Blob([text], {type:"model/stl"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+  document.querySelectorAll("[data-stl]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      var kind = btn.getAttribute("data-stl");
+      var text = null, filename = "part.stl";
+      if (kind === "battery"){ text = boxSTL("battery_bracket_approx", 76, 47, 96); filename = "battery_bracket_approx.stl"; }
+      else if (kind === "corner"){ text = prismSTL("corner_block", 30, 40); filename = "corner_block.stl"; }
+      else if (kind === "ring-sub"){ text = ringSTL("sub_mount_ring", 99, 91, 4, 48); filename = "sub_mount_ring.stl"; }
+      else if (kind === "ring-mid"){ text = ringSTL("mid_mount_ring", 45, 39, 4, 40); filename = "mid_mount_ring.stl"; }
+      else if (kind === "ring-tw"){ text = ringSTL("tw_mount_ring", 27.5, 22.5, 4, 32); filename = "tw_mount_ring.stl"; }
+      if (text){
+        downloadText(filename, text);
+        pulse(btn); beep(900); haptic(15);
+        showToast("📥 " + filename + " ירד לתיקיית ההורדות");
+      }
+    });
+  });
+
+  /* ============ Share / print buttons ============ */
+  var shareCutListBtn = document.getElementById("shareCutList");
+  if (shareCutListBtn){
+    shareCutListBtn.addEventListener("click", function(){
+      var table = document.getElementById("cutListTable");
+      var text = "רשימת חיתוך — בומבוקס נייד (לוח בירץ׳ 15 מ״מ)\n\n" + tableToText(table);
+      shareOrCopy("רשימת חיתוך — בומבוקס", text);
+      haptic(6);
+    });
+  }
+  ["printWood", "printWire"].forEach(function(id){
+    var b = document.getElementById(id);
+    if (b) b.addEventListener("click", function(){ haptic(6); window.print(); });
+  });
+
+  /* ============ Step chips (shared across model / wood / wire tabs) ============ */
+  var currentStep = 0;
+  var stepRows = document.querySelectorAll("[data-steprow]");
+  var stepLabels = ["הכל","1","2","3","4","5","6","7","8"];
+
+  function buildChips(row){
+    stepLabels.forEach(function(lbl, i){
+      var chip = document.createElement("button");
+      chip.className = "step-chip" + (i === 0 ? " active" : "");
+      chip.textContent = i === 0 ? "הכל" : ("שלב " + lbl);
+      chip.dataset.step = i;
+      chip.setAttribute("aria-pressed", i === 0 ? "true" : "false");
+      chip.addEventListener("click", function(){ setStep(i); beep(i===0?500:640); haptic(6); });
+      row.appendChild(chip);
+    });
+  }
+  stepRows.forEach(buildChips);
+
+  function stepsMatch(datasetStr, step){
+    if (!datasetStr) return false;
+    return datasetStr.split(",").indexOf(String(step)) !== -1;
+  }
+
+  function setStep(step){
+    currentStep = step;
+    stepRows.forEach(function(row){
+      Array.prototype.forEach.call(row.children, function(chip){
+        var active = parseInt(chip.dataset.step, 10) === step;
+        chip.classList.toggle("active", active);
+        chip.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    });
+    allParts.forEach(function(p){
+      p.classList.remove("step-highlight", "step-dim");
+      if (step === 0) return;
+      if (stepsMatch(p.dataset.steps, step)) p.classList.add("step-highlight");
+      else p.classList.add("step-dim");
+    });
+    allFaces.forEach(function(f){
+      f.classList.remove("step-highlight", "step-dim");
+      if (step === 0) return;
+      if (stepsMatch(f.dataset.steps, step)) f.classList.add("step-highlight");
+      else f.classList.add("step-dim");
+    });
+    document.querySelectorAll("#workspace .card[data-steps]").forEach(function(card){
+      if (step === 0) { card.classList.remove("faded"); return; }
+      card.classList.toggle("faded", !stepsMatch(card.dataset.steps, step));
+    });
+  }
+  setStep(0);
+
+  /* ============ Steps progress (persisted) ============ */
+  var STORE_KEY = "boombox_build_progress_v1";
+  var checks = document.querySelectorAll(".stepChk");
+  var progFill = document.getElementById("progFill");
+  var progTxt = document.getElementById("progTxt");
+
+  function loadProgress(){
+    try { var raw = window.localStorage.getItem(STORE_KEY); return raw ? JSON.parse(raw) : {}; }
+    catch(e){ return {}; }
+  }
+  function saveProgress(data){ try { window.localStorage.setItem(STORE_KEY, JSON.stringify(data)); } catch(e){} }
+  function updateProgressUI(){
+    var total = checks.length, done = 0;
+    checks.forEach(function(c){ if (c.checked) done++; });
+    var pct = total ? Math.round((done/total)*100) : 0;
+    progFill.style.width = pct + "%";
+    progTxt.textContent = done + " / " + total + " שלבים הושלמו";
+  }
+  var saved = loadProgress();
+  checks.forEach(function(chk){
+    var card = chk.closest(".step-card");
+    var stepId = card ? card.getAttribute("data-step") : null;
+    if (stepId && saved[stepId]) { chk.checked = true; card.classList.add("done"); }
+    chk.addEventListener("change", function(){
+      var data = loadProgress();
+      var id = card.getAttribute("data-step");
+      data[id] = chk.checked;
+      saveProgress(data);
+      card.classList.toggle("done", chk.checked);
+      updateProgressUI();
+      beep(chk.checked ? 880 : 400);
+      haptic(chk.checked ? 10 : 6);
+    });
+  });
+  updateProgressUI();
+
+  document.getElementById("resetProgress").addEventListener("click", function(){
+    if (!window.confirm("לאפס את כל ההתקדמות בבנייה? הפעולה אינה הפיכה.")) return;
+    checks.forEach(function(chk){
+      chk.checked = false;
+      var card = chk.closest(".step-card");
+      if (card) card.classList.remove("done");
+    });
+    saveProgress({});
+    updateProgressUI();
+    showToast("ההתקדמות אופסה");
+    haptic([10,30,10]);
+  });
+
+  document.getElementById("shareProgress").addEventListener("click", function(){
+    var total = checks.length, done = 0;
+    checks.forEach(function(c){ if (c.checked) done++; });
+    shareOrCopy("התקדמות בניית הבומבוקס", "בניתי בומבוקס נייד 🔊 — " + done + " מתוך " + total + " שלבים הושלמו!");
+  });
+
+  /* ============ Restore last-open tab ============
+     Runs last, and silently (no beep/haptic/focus-steal on page load),
+     after every tab/panel has been wired above. */
+  if (settings.tab && document.getElementById("panel-" + settings.tab)){
+    switchTab(settings.tab, true);
+  }
+
+})();
+</script>
+</body>
+</html>
